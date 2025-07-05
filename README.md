@@ -29,3 +29,9 @@ connections are set using .env file, for more details look example.env
 ```bash
 cp example.env .env
 ```
+
+
+Ideas to improve project.
+
+Add config file, in this config the user can define if he want the file to be removed after it is readed 
+Add labels to edges of DAG
