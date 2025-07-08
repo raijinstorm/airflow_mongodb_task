@@ -35,3 +35,4 @@ Ideas to improve project.
 
 Add config file, in this config the user can define if he want the file to be removed after it is readed 
 Add labels to edges of DAG
+Instead of local file system use S3
