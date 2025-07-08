@@ -95,7 +95,7 @@ To run the pipeline, simply **place your CSV file named `tiktok_google_play_revi
 
 Here is a screenshot of the main `transform_csv` DAG in the Airflow UI.
 
-!(image.png)
+![](image.png)
 
 -----
 
