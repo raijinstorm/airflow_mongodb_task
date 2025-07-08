@@ -5,8 +5,10 @@ from airflow.operators.empty import EmptyOperator
 from airflow import Dataset
 from datetime import timedelta
 import pandas as pd
+import os
+import logging
 
-FINAL_CSV_DATASET = Dataset("file:///opt/airflow/data/tiktok_google_play_reviews_final.csv")
+FINAL_CSV_DATASET = Dataset("file:///opt/airflow/temp/tiktok_google_play_reviews_final.csv")
 MONGO_CONN_ID= "mongo_default"
 MONGO_DB = "airflow_demo_db"
 MONGO_COLLECTION = "tiktok_reviews_collection"
@@ -35,8 +37,10 @@ def load_csv_to_mongo():
         
         if records:
             collection.insert_many(records)
+            
+        logging.info("Data was loaded into MongoDB")
     except Exception as e:
-        print(f"Error while inserting data into mongoDB: {e}")
+        logging.error(f"Error while inserting data into mongoDB: {e}")
 
 
 load_to_mongo = PythonOperator(
@@ -44,6 +48,23 @@ load_to_mongo = PythonOperator(
     python_callable = load_csv_to_mongo,
     dag = dag
 )
+
+def clear_temp_files_csv():
+    path = "/opt/airflow/temp"
+    for filename in os.listdir(path):
+        file_path = os.path.join(path, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    logging.info("Temp data was deleted")
+
+
+clear_temp_files = PythonOperator(
+    task_id = "clear_temp_files",
+    python_callable=clear_temp_files_csv,
+    dag = dag
+)
+
+load_to_mongo >> clear_temp_files
 
 
 
