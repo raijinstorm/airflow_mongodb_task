@@ -8,13 +8,23 @@ import pandas as pd
 import os
 import logging
 
-FINAL_CSV_DATASET = Dataset("file:///opt/airflow/temp/tiktok_google_play_reviews_final.csv")
+DATA_DIR = os.getenv("DATA_DIR", "/opt/airflow/data")
+TEMP_DATA_DIR = os.getenv("TEMP_DATA_DIR", "/opt/airflow/temp")
+REVIEWS_CSV_NAME = os.getenv("REVIEWS_CSV_NAME", "tiktok_google_play_reviews")
+
+raw_csv_path = os.path.join(DATA_DIR, f"{REVIEWS_CSV_NAME}.csv")
+temp_csv_path_1 = os.path.join(TEMP_DATA_DIR, f"{REVIEWS_CSV_NAME}_1.csv")
+temp_csv_path_2 = os.path.join(TEMP_DATA_DIR, f"{REVIEWS_CSV_NAME}_2.csv")
+final_csv_path = os.path.join(TEMP_DATA_DIR, f"{REVIEWS_CSV_NAME}_final.csv")
+
+FINAL_CSV_DATASET = Dataset(f"file://{final_csv_path}")
+
 MONGO_CONN_ID= "mongo_default"
 MONGO_DB = "airflow_demo_db"
 MONGO_COLLECTION = "tiktok_reviews_collection"
 
 default_args = {
-    "owner":"???",
+    "owner":"airflow",
     "retries": 1,
     "retry_delay": timedelta(seconds=30)
 }
@@ -28,7 +38,7 @@ dag = DAG(
 
 def load_csv_to_mongo():
     try:    
-        df = pd.read_csv(FINAL_CSV_DATASET.uri.replace("file://", ""), header = 0)
+        df = pd.read_csv(final_csv_path, header = 0)
         
         records = df.to_dict(orient ="records")
         
@@ -50,7 +60,7 @@ load_to_mongo = PythonOperator(
 )
 
 def clear_temp_files_csv():
-    path = "/opt/airflow/temp"
+    path = TEMP_DATA_DIR
     for filename in os.listdir(path):
         file_path = os.path.join(path, filename)
         if os.path.isfile(file_path):
